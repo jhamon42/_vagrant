@@ -1,0 +1,23 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+cluster = {
+  "vm" => { :ip => "10.0.0.10", :cpus => 2, :mem => 2048}
+}
+
+Vagrant.configure("2") do |config|
+  cluster.each do |hostname, info|
+    config.vm.box = "jeromeh/lab-nginx"
+    config.vm.box_version = "0.2"
+    config.vm.define hostname do |cfg|
+      cfg.vm.provider "virtualbox" do |vb, override|
+        override.vm.network :private_network, ip: "#{info[:ip]}"
+        override.vm.hostname = hostname
+        vb.name = hostname
+        vb.memory = info[:mem]
+        vb.cpus = info[:cpus]
+        override.vm.synced_folder  "./static-website-example", "/usr/share/nginx/html/"
+      end
+    end
+  end
+end
